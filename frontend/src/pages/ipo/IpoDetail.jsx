@@ -1,6 +1,6 @@
 import api from "../../api/axios";
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import MainNavbar from "../../components/MainNavbar";
 
 // Helper for stable random numbers based on ID

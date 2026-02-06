@@ -20,7 +20,7 @@ function AskQuestion() {
         alert("Please login first");
         return;
       }
-      const res = await api.post(
+      await api.post(
         "/api/community/questions",
         {
           title,
