@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../../api/axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import MainNavbar from "../../components/MainNavbar";
 
 function QuestionDetail() {
@@ -12,10 +12,10 @@ function QuestionDetail() {
 
   const token = localStorage.getItem("token") || sessionStorage.getItem("token");
   const role = localStorage.getItem("role") || sessionStorage.getItem("role");
-  const name = localStorage.getItem("name") || sessionStorage.getItem("name");
+  // const name = localStorage.getItem("name") || sessionStorage.getItem("name");
   const isAdmin = role === "admin";
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const res = await api.get(`/api/community/questions/${id}`);
       setData(res.data);
@@ -25,11 +25,11 @@ function QuestionDetail() {
       alert("Failed to load question details");
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     load();
-  }, [id]);
+  }, [load]);
 
   const postAnswer = async () => {
     if (!answerContent.trim()) return;

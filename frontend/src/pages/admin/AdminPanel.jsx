@@ -7,7 +7,7 @@ function AdminPanel() {
   const [ipos, setIpos] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,7 +24,7 @@ function AdminPanel() {
       } catch (err) {
         console.error(err);
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
     fetchData();

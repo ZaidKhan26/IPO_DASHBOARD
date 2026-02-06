@@ -19,7 +19,7 @@ function IpoDetail() {
   const { id } = useParams();
   const [ipo, setIpo] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   useEffect(() => {
     api
