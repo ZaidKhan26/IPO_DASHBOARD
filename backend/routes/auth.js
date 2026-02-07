@@ -46,18 +46,20 @@ router.post("/google-login", async (req, res) => {
     const { idToken } = req.body;
     console.log("Google Login Request Received. ID Token Length:", idToken?.length);
 
-    // Verify token with Google
-    const googleRes = await axios.get(
-      `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
+    // Verify token with Firebase Identity Toolkit
+    const firebaseRes = await axios.post(
+      `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${process.env.FIREBASE_API_KEY}`,
+      { idToken }
     );
 
-    console.log("Google Token Info Response:", googleRes.data);
+    console.log("Firebase Token Verification Response:", firebaseRes.data);
 
-    const { email, name, email_verified } = googleRes.data;
+    const userProfile = firebaseRes.data.users[0];
+    const { email, displayName: name, emailVerified: email_verified } = userProfile;
 
     if (!email_verified) {
-      console.log("Google Email Not Verified");
-      return res.status(400).json({ msg: "Google email not verified" });
+      console.log("Firebase Email Not Verified");
+      return res.status(400).json({ msg: "Email not verified with Google/Firebase" });
     }
 
     let user = await User.findOne({ email });
