@@ -17,7 +17,8 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   : [
     "http://localhost:3000",
     "http://localhost:5173",
-    "https://your-frontend-domain.vercel.app"
+    "https://ipo-frontend1-mqa9hbud5-zaidkhan26s-projects.vercel.app",
+    "https://ipo-frontend1.vercel.app"
   ];
 
 app.use(cors({
@@ -25,10 +26,13 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
+    console.log("Request Origin:", origin); // Troubleshooting Log
+
     // Check against allowed list OR dynamic Vercel preview URLs
     const isAllowed = allowedOrigins.includes(origin) || origin.endsWith(".vercel.app");
 
     if (!isAllowed) {
+      console.log("CORS Blocked:", origin); // Troubleshooting Log
       return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
     }
     return callback(null, true);
