@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const axios = require("axios");
 const crypto = require("crypto");
 
 // HELPERS
@@ -36,6 +37,61 @@ router.post("/signup", async (req, res) => {
     res.json({ msg: "Account created." });
   } catch (err) {
     res.status(500).json({ msg: "Signup failed" });
+  }
+});
+
+// ================= GOOGLE LOGIN =================
+router.post("/google-login", async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    // Verify token with Google
+    const googleRes = await axios.get(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
+    );
+
+    const { email, name, email_verified } = googleRes.data;
+
+    if (!email_verified) {
+      return res.status(400).json({ msg: "Google email not verified" });
+    }
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user
+      const randomPassword = crypto.randomBytes(16).toString("hex");
+      const hash = await bcrypt.hash(randomPassword, 10);
+
+      user = await User.create({
+        name: name,
+        email: email,
+        password: hash,
+        provider: "google",
+        isVerified: true,
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+        name: user.name,
+        email: user.email,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "10h" }
+    );
+
+    res.json({
+      token,
+      role: user.role,
+      name: user.name,
+      email: user.email,
+    });
+  } catch (err) {
+    console.error("Google Login Error:", err.message);
+    res.status(500).json({ msg: "Google Login failed" });
   }
 });
 
