@@ -44,15 +44,19 @@ router.post("/signup", async (req, res) => {
 router.post("/google-login", async (req, res) => {
   try {
     const { idToken } = req.body;
+    console.log("Google Login Request Received. ID Token Length:", idToken?.length);
 
     // Verify token with Google
     const googleRes = await axios.get(
       `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`
     );
 
+    console.log("Google Token Info Response:", googleRes.data);
+
     const { email, name, email_verified } = googleRes.data;
 
     if (!email_verified) {
+      console.log("Google Email Not Verified");
       return res.status(400).json({ msg: "Google email not verified" });
     }
 
