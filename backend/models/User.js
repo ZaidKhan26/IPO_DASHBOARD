@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
     provider: { type: String, default: "local" },
 
     resetToken: String,
-    resetExpire: Date, // 🔥 FIXED NAME
+    resetExpire: Date,
 
     otp: String,
     otpExpiry: Date,

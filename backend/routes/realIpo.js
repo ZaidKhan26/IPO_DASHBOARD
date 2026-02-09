@@ -5,9 +5,7 @@ const { redisClient } = require("../config/redis");
 
 const router = express.Router();
 
-// ======================
-// 🔐 RATE LIMITER
-// ======================
+// RATE LIMITER
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
     max: 100,
@@ -16,9 +14,7 @@ const limiter = rateLimit({
 
 router.use(limiter);
 
-// ======================
 // BROKER LINKS
-// ======================
 const BROKER_LINKS = [
     {
         name: "Zerodha",
@@ -52,9 +48,7 @@ const BROKER_LINKS = [
     }
 ];
 
-// ======================
 // MAIN FETCH FUNCTION
-// ======================
 async function fetchRealIPOData() {
     // 1. TRY REDIS CACHE
     if (redisClient && redisClient.isOpen) {
@@ -131,9 +125,7 @@ async function fetchRealIPOData() {
     return { data: ipos, source };
 }
 
-// ======================
 // TRANSFORM HELPERS
-// ======================
 function transformRapidApiIPO(item, index) {
     return {
         _id: `live-rapid-${index}`,
@@ -227,9 +219,7 @@ function determineStatus(open, close) {
     return "Upcoming";
 }
 
-// ======================
 // ROUTES
-// ======================
 router.get("/", async (req, res) => {
     try {
         const result = await fetchRealIPOData();

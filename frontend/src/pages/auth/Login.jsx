@@ -11,6 +11,12 @@ function Login() {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
+    // Force clear session if we hit the login page
+    useState(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+    }, []);
+
     const submit = async (e) => {
         e.preventDefault();
         if (!email || !password) return alert("Please fill all fields");

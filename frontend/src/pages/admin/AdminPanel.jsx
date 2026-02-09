@@ -18,9 +18,9 @@ function AdminPanel() {
           api.get("/api/ipo"),
           api.get("/api/blogs")
         ]);
-        setCompanies(cRes.data);
-        setIpos(iRes.data);
-        setBlogs(bRes.data);
+        setCompanies(Array.isArray(cRes.data) ? cRes.data : []);
+        setIpos(iRes.data?.data || (Array.isArray(iRes.data) ? iRes.data : []));
+        setBlogs(bRes.data?.data || (Array.isArray(bRes.data) ? bRes.data : []));
       } catch (err) {
         console.error(err);
       } finally {
@@ -83,11 +83,11 @@ function AdminPanel() {
           <div className="bg-white rounded-[48px] p-10 shadow-sm border border-slate-100">
             <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-50">
               <h2 className="text-2xl font-black text-slate-900 tracking-tighter">Market Listings</h2>
-              <span className="text-indigo-600 font-bold text-xs">Recently Added</span>
+              <button onClick={() => navigate("/admin/manage-ipos")} className="text-indigo-600 font-bold text-xs hover:text-indigo-400 Transition-all">Manage All &rarr;</button>
             </div>
             <div className="space-y-4">
               {ipos.length === 0 && <p className="text-center py-10 font-bold text-slate-300">No IPOs found</p>}
-              {ipos.slice(0, 6).map((ipo) => (
+              {(Array.isArray(ipos) ? ipos : []).slice(0, 6).map((ipo) => (
                 <div key={ipo._id} className="group flex items-center justify-between p-6 bg-slate-50 hover:bg-indigo-50 rounded-[32px] transition-all duration-300 border border-transparent hover:border-indigo-100">
                   <div className="flex items-center gap-6">
                     <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-2 shadow-sm border border-slate-100 group-hover:scale-110 transition-transform">
@@ -117,7 +117,7 @@ function AdminPanel() {
             </div>
             <div className="space-y-4">
               {blogs.length === 0 && <p className="text-center py-10 font-bold text-slate-700">No blogs published</p>}
-              {blogs.slice(0, 6).map((blog) => (
+              {(Array.isArray(blogs) ? blogs : []).slice(0, 6).map((blog) => (
                 <div key={blog._id} className="group flex items-center justify-between p-6 bg-white/5 hover:bg-white/10 rounded-[32px] transition-all duration-300">
                   <div className="flex-1 mr-6">
                     <p className="font-black text-white text-lg line-clamp-1 tracking-tight mb-1">{blog.title}</p>

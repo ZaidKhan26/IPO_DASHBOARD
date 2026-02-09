@@ -7,6 +7,12 @@ function AdminLogin() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  // Force clear session if we hit the login page
+  useState(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  }, []);
+
   const submit = async (e) => {
     e.preventDefault();
     try {

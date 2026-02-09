@@ -12,41 +12,39 @@ function Home() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const limit = 12;
+  const [totalItems, setTotalItems] = useState(0);
+  const limit = 10;
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch both custom and live IPOs in parallel with pagination
+        // Fetch a larger batch from both sources to allow unified pagination in frontend
         const [customRes, liveRes] = await Promise.all([
-          api.get(`/api/ipo?page=${page}&limit=${limit}`),
-          api.get(`/api/real-ipo?page=${page}&limit=${limit}`).catch(() => ({ data: { data: [] } }))
+          api.get(`/api/ipo?page=1&limit=100`),
+          api.get(`/api/real-ipo?page=1&limit=100`).catch(() => ({ data: { data: [] } }))
         ]);
 
-        const customData = customRes.data?.data || [];
-        const liveData = liveRes.data?.data || [];
+        const customData = customRes.data?.data;
+        const liveData = liveRes.data?.data;
 
-        setCustomIpos(customData);
-        setLiveIpos(liveData);
+        setCustomIpos(Array.isArray(customData) ? customData : []);
+        setLiveIpos(Array.isArray(liveData) ? liveData : []);
 
-        // Update total pages based on the maximum totalPages from both sources
-        const maxPages = Math.max(
-          customRes.data?.totalPages || 1,
-          liveRes.data?.totalPages || 1
-        );
-        setTotalPages(maxPages);
+        const totalAvailable = (customRes.data?.totalCount || 0) + (liveRes.data?.totalCount || 0);
+        setTotalItems(totalAvailable);
+        setTotalPages(Math.ceil(totalAvailable / limit) || 1);
 
       } catch (err) {
-        console.error(err);
+        console.error("Home.jsx: Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [page]);
+  }, []); // Only fetch once, paginate in frontend for merged view
 
   // Handle filter change - reset to page 1
   useEffect(() => {
@@ -57,21 +55,28 @@ function Home() {
   const getFilteredIpos = () => {
     let ipos = [];
 
+    const safeLiveIpos = Array.isArray(liveIpos) ? liveIpos : [];
+    const safeCustomIpos = Array.isArray(customIpos) ? customIpos : [];
+
     if (activeFilter === "all") {
-      ipos = [...liveIpos, ...customIpos];
+      ipos = [...safeLiveIpos, ...safeCustomIpos];
     } else if (activeFilter === "live") {
-      ipos = liveIpos;
+      ipos = safeLiveIpos;
     } else if (activeFilter === "custom") {
-      ipos = customIpos;
+      ipos = safeCustomIpos;
     }
 
     // Sort: Ongoing first, then Upcoming, then Closed
     const statusOrder = { "Ongoing": 0, "Upcoming": 1, "Closed": 2 };
-    return ipos.sort((a, b) => (statusOrder[a.status] || 2) - (statusOrder[b.status] || 2));
+    const sorted = ipos.sort((a, b) => (statusOrder[a.status] || 2) - (statusOrder[b.status] || 2));
+
+    // Unified Pagination: Slice the merged and sorted list
+    const startIndex = (page - 1) * limit;
+    return sorted.slice(startIndex, startIndex + limit);
   };
 
   const filteredIpos = getFilteredIpos();
-  const totalCount = liveIpos.length + customIpos.length;
+  const totalCount = totalItems;
 
   return (
     <div className="bg-[#F8FAFC] min-h-screen">
@@ -133,7 +138,7 @@ function Home() {
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
               <p className="text-gray-400 font-bold uppercase text-xs tracking-widest">
-                Market Opportunities (Page {page} of {totalPages})
+                Market Opportunities ({totalCount} Total • Page {page} of {totalPages})
               </p>
             </div>
           </div>

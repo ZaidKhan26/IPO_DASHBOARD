@@ -12,6 +12,7 @@ import MarketNews from "./pages/ipo/MarketNews";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 // 🛠️ Admin Panel
 import AdminPanel from "./pages/admin/AdminPanel";
@@ -21,6 +22,7 @@ import AddCompany from "./pages/admin/AddCompany";
 import AddIpo from "./pages/admin/AddIpo";
 import EditIpo from "./pages/admin/EditIpo";
 import AdminBlogs from "./pages/admin/AdminBlogs";
+import AdminManageIpos from "./pages/admin/AdminManageIpos";
 
 // ✍️ Blog Section
 import Blog from "./pages/blog/Blog";
@@ -49,22 +51,79 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Auth Routes */}
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Home & IPO Routes */}
-        <Route path="/home" element={<Home />} />
-        <Route path="/ipo/:id" element={<IpoDetail />} />
-        <Route path="/real-ipo/:id" element={<RealIpoDetail />} />
-        <Route path="/ipo-tracker" element={<IpoTracker />} />
-        <Route path="/market-news" element={<MarketNews />} />
-        <Route path="/ipo-analysis" element={<IpoAnalysis />} />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ipo/:id"
+          element={
+            <ProtectedRoute>
+              <IpoDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/real-ipo/:id"
+          element={
+            <ProtectedRoute>
+              <RealIpoDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ipo-tracker"
+          element={
+            <ProtectedRoute>
+              <IpoTracker />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/market-news"
+          element={
+            <ProtectedRoute>
+              <MarketNews />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ipo-analysis"
+          element={
+            <ProtectedRoute>
+              <IpoAnalysis />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Community Routes */}
-        <Route path="/community" element={<Community />} />
-        <Route path="/community/discussions" element={<Discussions />} />
+        <Route
+          path="/community"
+          element={
+            <ProtectedRoute>
+              <Community />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/community/discussions"
+          element={
+            <ProtectedRoute>
+              <Discussions />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/community/ask"
           element={
@@ -73,12 +132,40 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/community/question/:id" element={<QuestionDetail />} />
-        <Route path="/community/experts" element={<ExpertBlogs />} />
+        <Route
+          path="/community/question/:id"
+          element={
+            <ProtectedRoute>
+              <QuestionDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/community/experts"
+          element={
+            <ProtectedRoute>
+              <ExpertBlogs />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Blog Routes */}
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/blog/:id" element={<BlogDetail />} />
+        <Route
+          path="/blog"
+          element={
+            <ProtectedRoute>
+              <Blog />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/blog/:id"
+          element={
+            <ProtectedRoute>
+              <BlogDetail />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/write-blog"
           element={
@@ -131,6 +218,14 @@ function App() {
           }
         />
         <Route
+          path="/admin/manage-ipos"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <AdminManageIpos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/blogs"
           element={
             <ProtectedRoute adminOnly={true}>
@@ -156,10 +251,38 @@ function App() {
         />
 
         {/* Marketing/General Routes */}
-        <Route path="/products" element={<Products />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/news" element={<News />} />
-        <Route path="/videos" element={<Videos />} />
+        <Route
+          path="/products"
+          element={
+            <ProtectedRoute>
+              <Products />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/pricing"
+          element={
+            <ProtectedRoute>
+              <Pricing />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/news"
+          element={
+            <ProtectedRoute>
+              <News />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/videos"
+          element={
+            <ProtectedRoute>
+              <Videos />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

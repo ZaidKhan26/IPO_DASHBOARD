@@ -18,7 +18,8 @@ function Discussions() {
     api
       .get(`/api/community/questions?page=${page}&limit=10`)
       .then((res) => {
-        setQuestions(res.data?.data || []);
+        const data = res.data?.data || (Array.isArray(res.data) ? res.data : []);
+        setQuestions(data);
         setTotalPages(res.data?.totalPages || 1);
         setLoading(false);
       })

@@ -14,9 +14,10 @@ function Blog() {
   useEffect(() => {
     setLoading(true);
     api
-      .get(`/api/blogs?page=${page}&limit=9`)
+      .get(`/api/blogs?page=${page}&limit=10`)
       .then((res) => {
-        setBlogs(res.data?.data || []);
+        const data = res.data?.data || (Array.isArray(res.data) ? res.data : []);
+        setBlogs(data);
         setTotalPages(res.data?.totalPages || 1);
         setLoading(false);
       })

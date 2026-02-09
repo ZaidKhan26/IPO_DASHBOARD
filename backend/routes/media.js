@@ -4,9 +4,7 @@ const rateLimit = require("express-rate-limit");
 
 const router = express.Router();
 
-// ======================
-// 🔐 RATE LIMITER
-// ======================
+// RATE LIMITER
 const limiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
   max: 30, // max 30 requests per IP
@@ -16,9 +14,7 @@ const limiter = rateLimit({
 // Apply limiter ONLY to media routes
 router.use(limiter);
 
-// ======================
 // BLOG ROUTE
-// ======================
 router.get("/blog", async (req, res) => {
   try {
     const response = await axios.get(
@@ -39,9 +35,7 @@ router.get("/blog", async (req, res) => {
   }
 });
 
-// ======================
 // NEWS ROUTE
-// ======================
 router.get("/news", async (req, res) => {
   try {
     const response = await axios.get(
@@ -65,9 +59,7 @@ router.get("/news", async (req, res) => {
   }
 });
 
-// ======================
 // VIDEOS ROUTE
-// ======================
 router.get("/videos", async (req, res) => {
   try {
     const response = await axios.get(
