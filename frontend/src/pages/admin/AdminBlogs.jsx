@@ -2,24 +2,29 @@ import api from "../../api/axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminNavbar from "../../components/AdminNavbar";
+import Pagination from "../../components/Pagination";
 
 function AdminBlogs() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const navigate = useNavigate();
 
   useEffect(() => {
+    setLoading(true);
     api
-      .get("/api/blogs")
+      .get(`/api/blogs?page=${page}&limit=9`)
       .then((res) => {
-        setBlogs(res.data);
+        setBlogs(res.data?.data || []);
+        setTotalPages(res.data?.totalPages || 1);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Load blogs error:", err);
         setLoading(false);
       });
-  }, []);
+  }, [page]);
 
   const deleteBlog = async (id) => {
     try {
@@ -46,7 +51,7 @@ function AdminBlogs() {
           <div>
             <span className="text-indigo-600 font-black text-[10px] uppercase tracking-widest bg-indigo-50 px-4 py-1.5 rounded-full border border-indigo-100 mb-4 inline-block shadow-sm">Content Management</span>
             <h1 className="text-4xl lg:text-5xl font-black text-slate-900 tracking-tighter">Editorial Desk.</h1>
-            <p className="text-slate-400 font-medium mt-2">Manage your blog articles and content</p>
+            <p className="text-slate-400 font-medium mt-2">Manage your blog articles (Page {page} of {totalPages})</p>
           </div>
           <button
             onClick={() => navigate("/admin/add-blog")}
@@ -120,66 +125,74 @@ function AdminBlogs() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogs.map((blog) => (
-              <div
-                key={blog._id}
-                className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100 hover:shadow-2xl hover:border-indigo-100 transition-all duration-500 group relative overflow-hidden flex flex-col"
-              >
-                {/* HOVER ACCENT */}
-                <div className="absolute top-0 left-0 w-1.5 h-0 group-hover:h-full transition-all duration-500 bg-indigo-600"></div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {blogs.map((blog) => (
+                <div
+                  key={blog._id}
+                  className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-100 hover:shadow-2xl hover:border-indigo-100 transition-all duration-500 group relative overflow-hidden flex flex-col"
+                >
+                  {/* HOVER ACCENT */}
+                  <div className="absolute top-0 left-0 w-1.5 h-0 group-hover:h-full transition-all duration-500 bg-indigo-600"></div>
 
-                {/* BLOG CONTENT */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">Article</span>
-                    <span className="text-slate-300 text-[10px] font-bold uppercase tracking-wider">
-                      {new Date(blog.createdAt || Date.now()).toLocaleDateString()}
-                    </span>
-                  </div>
-
-                  <h3 className="font-black text-xl text-slate-900 tracking-tight mb-3 line-clamp-2 group-hover:text-indigo-600 transition-colors">
-                    {blog.title}
-                  </h3>
-
-                  <p className="text-slate-400 font-medium text-sm leading-relaxed line-clamp-3 mb-6">
-                    {blog.content}
-                  </p>
-
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
+                  {/* BLOG CONTENT */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider">Article</span>
+                      <span className="text-slate-300 text-[10px] font-bold uppercase tracking-wider">
+                        {new Date(blog.createdAt || Date.now()).toLocaleDateString()}
+                      </span>
                     </div>
-                    <span className="text-xs font-bold text-slate-500">{blog.author || "Bluestock Expert"}</span>
+
+                    <h3 className="font-black text-xl text-slate-900 tracking-tight mb-3 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                      {blog.title}
+                    </h3>
+
+                    <p className="text-slate-400 font-medium text-sm leading-relaxed line-clamp-3 mb-6">
+                      {blog.content}
+                    </p>
+
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <span className="text-xs font-bold text-slate-500">{blog.author || "Bluestock Expert"}</span>
+                    </div>
+                  </div>
+
+                  {/* ACTIONS */}
+                  <div className="flex gap-3 pt-6 border-t border-slate-50">
+                    <button
+                      onClick={() => navigate(`/admin/edit-blog/${blog._id}`)}
+                      className="flex-1 bg-slate-50 text-slate-700 px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteBlog(blog._id)}
+                      className="bg-red-50 text-red-600 px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </button>
                   </div>
                 </div>
+              ))}
+            </div>
 
-                {/* ACTIONS */}
-                <div className="flex gap-3 pt-6 border-t border-slate-50">
-                  <button
-                    onClick={() => navigate(`/admin/edit-blog/${blog._id}`)}
-                    className="flex-1 bg-slate-50 text-slate-700 px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => deleteBlog(blog._id)}
-                    className="bg-red-50 text-red-600 px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-red-600 hover:text-white transition-all flex items-center justify-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={(newPage) => setPage(newPage)}
+            />
+          </>
         )}
       </div>
     </div>

@@ -24,11 +24,24 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ================= GET ALL =================
+// ================= GET ALL (PAGINATED) =================
 router.get("/", async (req, res) => {
   try {
-    const data = await IPO.find().populate("companyId");
-    res.json(data);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const skip = (page - 1) * limit;
+
+    const [data, totalCount] = await Promise.all([
+      IPO.find().populate("companyId").sort({ createdAt: -1 }).skip(skip).limit(limit),
+      IPO.countDocuments()
+    ]);
+
+    res.json({
+      data,
+      currentPage: page,
+      totalPages: Math.ceil(totalCount / limit),
+      totalCount
+    });
   } catch (err) {
     res.status(500).json({ msg: "Server error" });
   }

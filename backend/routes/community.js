@@ -20,8 +20,21 @@ router.post("/questions", auth, async (req, res) => {
 
 router.get("/questions", async (req, res) => {
   try {
-    const q = await Question.find().sort({ createdAt: -1 });
-    res.json(q);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const [questions, totalCount] = await Promise.all([
+      Question.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Question.countDocuments()
+    ]);
+
+    res.json({
+      data: questions,
+      currentPage: page,
+      totalPages: Math.ceil(totalCount / limit),
+      totalCount
+    });
   } catch (err) {
     res.status(500).json({ msg: "Server error" });
   }

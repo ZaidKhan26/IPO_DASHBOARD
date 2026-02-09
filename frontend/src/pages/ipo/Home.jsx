@@ -2,6 +2,7 @@ import api from "../../api/axios";
 import { useEffect, useState } from "react";
 import IpoCard from "../../components/IpoCard";
 import MainNavbar from "../../components/MainNavbar";
+import Pagination from "../../components/Pagination";
 import { useNavigate } from "react-router-dom";
 
 function Home() {
@@ -9,25 +10,34 @@ function Home() {
   const [liveIpos, setLiveIpos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 12;
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        // Fetch both custom and live IPOs in parallel
+        // Fetch both custom and live IPOs in parallel with pagination
         const [customRes, liveRes] = await Promise.all([
-          api.get("/api/ipo"),
-          api.get("/api/real-ipo").catch(() => ({ data: { data: [] } }))
+          api.get(`/api/ipo?page=${page}&limit=${limit}`),
+          api.get(`/api/real-ipo?page=${page}&limit=${limit}`).catch(() => ({ data: { data: [] } }))
         ]);
 
-        setCustomIpos(customRes.data);
+        const customData = customRes.data?.data || [];
+        const liveData = liveRes.data?.data || [];
 
-        // Handle new response format: { source, count, data }
-        const liveData = liveRes.data?.data || liveRes.data || [];
-        console.log("Live IPO source:", liveRes.data?.source);
-        console.log("Live IPO count:", liveRes.data?.count || liveData.length);
+        setCustomIpos(customData);
+        setLiveIpos(liveData);
 
-        setLiveIpos(Array.isArray(liveData) ? liveData : []);
+        // Update total pages based on the maximum totalPages from both sources
+        const maxPages = Math.max(
+          customRes.data?.totalPages || 1,
+          liveRes.data?.totalPages || 1
+        );
+        setTotalPages(maxPages);
+
       } catch (err) {
         console.error(err);
       } finally {
@@ -36,7 +46,12 @@ function Home() {
     };
 
     fetchData();
-  }, []);
+  }, [page]);
+
+  // Handle filter change - reset to page 1
+  useEffect(() => {
+    setPage(1);
+  }, [activeFilter]);
 
   // Combine and filter IPOs
   const getFilteredIpos = () => {
@@ -118,7 +133,7 @@ function Home() {
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
               <p className="text-gray-400 font-bold uppercase text-xs tracking-widest">
-                Tracking {totalCount} IPOs ({liveIpos.length} Live, {customIpos.length} Custom)
+                Market Opportunities (Page {page} of {totalPages})
               </p>
             </div>
           </div>
@@ -126,9 +141,9 @@ function Home() {
           {/* Filter Tabs */}
           <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
             {[
-              { key: "all", label: "All IPOs", count: totalCount },
-              { key: "live", label: "Live", count: liveIpos.length },
-              { key: "custom", label: "Custom", count: customIpos.length }
+              { key: "all", label: "All IPOs" },
+              { key: "live", label: "Live" },
+              { key: "custom", label: "Custom" }
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -140,10 +155,6 @@ function Home() {
               >
                 {tab.key === "live" && <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>}
                 {tab.label}
-                <span className={`text-xs px-2 py-0.5 rounded-full ${activeFilter === tab.key ? "bg-white/20" : "bg-gray-100"
-                  }`}>
-                  {tab.count}
-                </span>
               </button>
             ))}
           </div>
@@ -157,27 +168,28 @@ function Home() {
             ))}
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-            {filteredIpos.map((ipo) => (
-              <IpoCard key={ipo._id} ipo={ipo} />
-            ))}
+          <>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+              {filteredIpos.map((ipo) => (
+                <IpoCard key={ipo._id} ipo={ipo} />
+              ))}
 
-            {filteredIpos.length === 0 && (
-              <div className="col-span-full py-32 text-center bg-white rounded-[48px] border-4 border-dashed border-gray-50 flex flex-col items-center">
-                <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center mb-6">
-                  <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              {filteredIpos.length === 0 && (
+                <div className="col-span-full py-32 text-center bg-white rounded-[48px] border-4 border-dashed border-gray-50 flex flex-col items-center">
+                  <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center mb-6">
+                    <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  </div>
+                  <p className="text-gray-400 font-black text-xl tracking-tight">No IPOs found on this page.</p>
                 </div>
-                <p className="text-gray-400 font-black text-xl tracking-tight">No IPOs found.</p>
-                <p className="text-gray-300 font-medium max-w-xs mt-2">
-                  {activeFilter === "live"
-                    ? "No live IPOs available at the moment."
-                    : activeFilter === "custom"
-                      ? "No custom IPOs have been added yet."
-                      : "We'll update the dashboard as soon as the market shifts."}
-                </p>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={(newPage) => setPage(newPage)}
+            />
+          </>
         )}
       </div>
     </div>

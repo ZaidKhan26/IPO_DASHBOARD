@@ -233,11 +233,18 @@ function determineStatus(open, close) {
 router.get("/", async (req, res) => {
     try {
         const result = await fetchRealIPOData();
-        // console.log(`📤 Returning ${result.data.length} IPOs (source: ${result.source})`);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 12;
+        const skip = (page - 1) * limit;
+
+        const paginatedData = result.data.slice(skip, skip + limit);
+
         res.json({
             source: result.source,
-            count: result.data.length,
-            data: result.data
+            totalCount: result.data.length,
+            currentPage: page,
+            totalPages: Math.ceil(result.data.length / limit),
+            data: paginatedData
         });
     } catch (err) {
         console.error("Fetch failed:", err.message);

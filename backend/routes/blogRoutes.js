@@ -15,8 +15,21 @@ router.post("/", adminAuth, async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const blogs = await Blog.find().sort({ createdAt: -1 });
-    res.json(blogs);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 9;
+    const skip = (page - 1) * limit;
+
+    const [blogs, totalCount] = await Promise.all([
+      Blog.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Blog.countDocuments()
+    ]);
+
+    res.json({
+      data: blogs,
+      currentPage: page,
+      totalPages: Math.ceil(totalCount / limit),
+      totalCount
+    });
   } catch (err) {
     res.status(500).json({ msg: "Server error" });
   }
